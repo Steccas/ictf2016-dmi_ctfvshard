@@ -1,0 +1,56 @@
+
+module httpd 1.0;
+
+require {
+	type home_root_t;
+	type system_dbusd_var_run_t;
+	type user_home_dir_t;
+	type httpd_t;
+	type user_home_t;
+	type abrt_etc_t;
+	type httpd_user_script_exec_t;
+	type httpd_suexec_t;
+	type gconf_home_t;
+	type jboss_management_port_t;
+	type syslogd_var_run_t;
+	type httpd_user_script_t;
+	class sock_file write;
+	class tcp_socket name_connect;
+	class dir { write getattr search read remove_name add_name };
+	class file { setattr read create write getattr unlink open append };
+}
+
+#============= httpd_suexec_t ==============
+
+#!!!! This avc is allowed in the current policy
+allow httpd_suexec_t user_home_dir_t:dir search;
+
+#============= httpd_t ==============
+
+#!!!! This avc is allowed in the current policy
+allow httpd_t home_root_t:dir read;
+
+#!!!! WARNING: 'home_root_t' is a base type.
+#!!!! The file '/home/amends/public_html/cgi-bin/amends.php' is mislabeled on your system.  
+#!!!! Fix with $ restorecon -R -v /home/amends/public_html/cgi-bin/amends.php
+allow httpd_t home_root_t:file getattr;
+allow httpd_t httpd_user_script_exec_t:file append;
+
+#!!!! This avc can be allowed using the boolean 'httpd_read_user_content'
+allow httpd_t user_home_t:dir read;
+allow httpd_t user_home_t:dir { write add_name };
+
+#!!!! This avc can be allowed using the boolean 'httpd_read_user_content'
+allow httpd_t user_home_t:file { read open };
+allow httpd_t user_home_t:file { read write create open };
+
+#============= httpd_user_script_t ==============
+allow httpd_user_script_t abrt_etc_t:dir getattr;
+
+#!!!! This avc is allowed in the current policy
+allow httpd_user_script_t gconf_home_t:dir search;
+allow httpd_user_script_t httpd_user_script_exec_t:dir { write remove_name add_name };
+allow httpd_user_script_t httpd_user_script_exec_t:file { write create unlink setattr append };
+allow httpd_user_script_t jboss_management_port_t:tcp_socket name_connect;
+allow httpd_user_script_t syslogd_var_run_t:sock_file write;
+allow httpd_user_script_t system_dbusd_var_run_t:sock_file write;
